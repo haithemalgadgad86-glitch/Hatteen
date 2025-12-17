@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>حطّين</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+--green:#064e3b;
+--gold:#d4af37;
+--dark:#022c22;
+--card:#033b2f;
+}
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{margin:0;background:var(--dark);color:#fff}
+.hidden{display:none}
+header{
+background:linear-gradient(135deg,var(--green),#022c22);
+padding:18px;text-align:center;
+font-size:24px;font-weight:900;color:var(--gold)
+}
+.card{background:var(--card);margin:12px;padding:16px;border-radius:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.box{
+background:#022c22;border:1px solid var(--gold);
+border-radius:16px;padding:14px;text-align:center;cursor:pointer
+}
+.box img{width:48px;margin-bottom:6px}
+button{
+width:100%;padding:10px;border-radius:12px;border:none;
+background:linear-gradient(135deg,var(--gold),#f5d76e);
+font-weight:700;margin-top:8px;cursor:pointer
+}
+input{
+width:100%;padding:10px;border-radius:12px;
+background:#022c22;color:#fff;border:1px solid var(--gold);
+margin:6px 0
+}
+.gold{color:var(--gold)}
+.topbar{
+display:flex;justify-content:space-between;
+align-items:center;background:var(--green);padding:10px
+}
+</style>
+</head>
+
+<body>
+
+<header>✨ حطّين – منصة الخدمات الرقمية</header>
+
+<!-- LOGIN -->
+<div id="login" class="card">
+<h3 class="gold">تسجيل الدخول</h3>
+<input id="username" placeholder="اسم المستخدم">
+<button onclick="login()">دخول</button>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+<div class="topbar">
+<div>💰 الرصيد: <span id="bal">0</span> د.ل</div>
+<button onclick="openPage('admin')">👑 المشرف</button>
+</div>
+
+<div class="card">
+<h3 class="gold">المنصات</h3>
+<div class="grid">
+
+<div class="box" onclick="openPlatform('Instagram')">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png">
+Instagram
+</div>
+
+<div class="box" onclick="openPlatform('TikTok')">
+<img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png">
+TikTok
+</div>
+
+<div class="box" onclick="openPlatform('Telegram')">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+Telegram
+</div>
+
+<div class="box" onclick="openPlatform('Twitter')">
+<img src="https://cdn-icons-png.flaticon.com/512/733/733579.png">
+Twitter
+</div>
+
+<div class="box" onclick="openPlatform('YouTube')">
+<img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png">
+YouTube
+</div>
+
+<div class="box" onclick="openPlatform('Games')">
+<img src="https://cdn-icons-png.flaticon.com/512/686/686589.png">
+شحن الألعاب
+</div>
+
+<div class="box" onclick="openPlatform('Subscriptions')">
+<img src="https://cdn-icons-png.flaticon.com/512/889/889140.png">
+الاشتراكات
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- SERVICES -->
+<div id="services" class="card hidden">
+<button onclick="openPage('app')">⬅ رجوع</button>
+<h3 id="serviceTitle" class="gold"></h3>
+<div id="servicesList"></div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="card hidden">
+<button onclick="openPage('app')">⬅ رجوع</button>
+<h3 class="gold">لوحة المشرف</h3>
+<input id="adminCode" placeholder="رمز المشرف">
+<button onclick="enterAdmin()">دخول</button>
+
+<div id="adminPanel" class="hidden">
+<h4 class="gold">تعديل الأسعار</h4>
+<div id="priceEditor"></div>
+</div>
+</div>
+
+<script>
+const ADMIN="5599";
+let currentUser="",currentPlatform="";
+
+let SERVICES = JSON.parse(localStorage.getItem("SERVICES")) || {
+Instagram:[
+{name:"متابعين",price:15},
+{name:"لايكات",price:7},
+{name:"تعليقات",price:15}
+],
+TikTok:[
+{name:"متابعين",price:14},
+{name:"لايكات",price:6},
+{name:"مشاهدات",price:9}
+],
+Telegram:[
+{name:"مشتركين",price:12},
+{name:"مشاهدات",price:8}
+],
+Twitter:[
+{name:"متابعين",price:20},
+{name:"لايكات",price:12}
+],
+YouTube:[
+{name:"مشتركين",price:35},
+{name:"مشاهدات",price:20}
+],
+Games:[
+{name:"PUBG 60 UC",price:25},
+{name:"Free Fire 110",price:15},
+{name:"Roblox 40 Robux",price:20}
+],
+Subscriptions:[
+{name:"Netflix شهر",price:39},
+{name:"Shahid شهر",price:39},
+{name:"Snap Plus 3 شهور",price:65}
+]
+};
+
+function save(){localStorage.setItem("SERVICES",JSON.stringify(SERVICES));}
+
+function login(){
+if(!username.value)return alert("اكتب اسم المستخدم");
+currentUser=username.value;
+localStorage.setItem("user",currentUser);
+openPage("app");
+loadBal();
+}
+
+function loadBal(){
+bal.innerText=localStorage.getItem("bal_"+currentUser)||0;
+}
+
+function openPage(id){
+["login","app","services","admin"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+
+function openPlatform(p){
+currentPlatform=p;
+serviceTitle.innerText=p;
+servicesList.innerHTML="";
+SERVICES[p].forEach((s,i)=>{
+servicesList.innerHTML+=`
+<div class="card">
+<b>${s.name}</b><br>
+سعر = ${s.price} د.ل
+<input type="number" id="q${i}" placeholder="الكمية">
+<button onclick="order(${i})">طلب</button>
+</div>`;
+});
+openPage("services");
+}
+
+function order(i){
+let q=document.getElementById("q"+i).value;
+if(!q)return alert("حدد الكمية");
+let total=(q/1000)*SERVICES[currentPlatform][i].price;
+let b=parseFloat(localStorage.getItem("bal_"+currentUser)||0);
+if(b<total)return alert("رصيد غير كافي");
+localStorage.setItem("bal_"+currentUser,b-total);
+loadBal();
+
+window.open(`https://wa.me/218910767383?text=${encodeURIComponent(
+"طلب جديد\n"+currentPlatform+
+"\nالخدمة: "+SERVICES[currentPlatform][i].name+
+"\nالكمية: "+q+
+"\nالسعر: "+total+" د.ل"
+)}`);
+
+alert("تم الطلب");
+openPage("app");
+}
+
+function enterAdmin(){
+if(adminCode.value!==ADMIN)return alert("رمز خطأ");
+adminPanel.classList.remove("hidden");
+priceEditor.innerHTML="";
+for(let p in SERVICES){
+priceEditor.innerHTML+=`<h4 class="gold">${p}</h4>`;
+SERVICES[p].forEach((s,i)=>{
+priceEditor.innerHTML+=`
+${s.name}
+<input type="number" value="${s.price}"
+onchange="SERVICES['${p}'][${i}].price=this.value;save()">
+`;
+});
+}
+}
+
+if(localStorage.getItem("user")){
+currentUser=localStorage.getItem("user");
+openPage("app");
+loadBal();
+}
+</script>
+
+</body>
+</html>
